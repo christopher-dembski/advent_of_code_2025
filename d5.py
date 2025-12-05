@@ -44,4 +44,11 @@ def part_one(file_name):
     return sum(ingredient_id in multi_range for ingredient_id in ingredient_ids)
 
 
+def part_two(file_name):
+    range_tuples, ingredient_ids = parse_input(file_name)
+    multi_range = MultiRange(range_tuples)
+    return sum(end - start + 1 for start, end in multi_range.ranges)
+
+
 print(part_one('inputs/d5b.txt'))
+print(part_two('inputs/d5b.txt'))
