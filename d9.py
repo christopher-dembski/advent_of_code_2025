@@ -13,12 +13,13 @@ def area(corner_1, corner_2):
     return x_dim * y_dim
 
 
+# colour the path with green sqaures and
+# adjacent squares just outside the enclosed shape white
 def colour_path_and_adjacent(reds):
     greens = set()
     whites = set()
     reds_offset_by_one = (*reds[1::], reds[0])
     for (x1, y1), (x2, y2) in zip(reds, reds_offset_by_one):
-        # print((x1, y1), (x2, y2))
         if x1 == x2:  # vertical
             if y1 < y2:  # moving down
                 for y in range(y1, y2 + 1):
@@ -53,21 +54,23 @@ def colour_path_and_adjacent(reds):
                     adjacent_below = (x, y1 + 1)
                     if adjacent_below not in greens and adjacent_below not in reds:
                         whites.add(adjacent_below)
+    whites -= greens  # some get coloured white that should be green
     return greens, whites
 
 
-# (x1, y1) is top-left corner
-# (x2, y2) is bottom-right corner
+# trace paths between corners
+# if encounter white, know outside the enclosed shape, so invalid rectangle
 def valid_rectangle(x1, y1, x2, y2, whites):
-    # is this logic right?
+    # ensure (x1, y1) top left and (x2, y2) bottom right
+    # this rectangle covers the same squares as the original
     x1, x2 = sorted([x1, x2])
     y1, y2 = sorted([y1, y2])
-    # horiztonal-vertical
+    # move horizontal then vertical
     if any((x, y1) in whites for x in range(x1 + 1, x2 + 1)):
         return False
     if any((x2, y) in whites for y in range(y1 + 1, y2 + 1)):
         return False
-    # vertical-horizontal
+    # move vertical then horizontal
     if any((x1, y) in whites for y in range(y1 + 1, y2 + 1)):
         return False
     if any((x, y2) in whites for x in range(x1 + 1, x2 + 1)):
@@ -76,6 +79,7 @@ def valid_rectangle(x1, y1, x2, y2, whites):
     return True
 
 
+# helper function for debugging
 def display_grid(reds, greens, whites):
     max_x = max(x for x, y in it.chain(reds, greens, whites))
     max_y = max(y for x, y in it.chain(reds, greens, whites))
@@ -96,27 +100,13 @@ def part_one(file_name):
 def part_two(file_name):
     reds = parse_input(file_name)
     greens, whites = colour_path_and_adjacent(reds)
-    whites -= greens  # TO DO: fix this correctly
-    # display_grid(reds, greens, whites)
-    # exclude too many (not always top-right bottom-left)
-    # must consider others
-    count = 0
-    limit = 10
+    whites -= greens
     mx = 0
     for red_1 in reds:
         for red_2 in reds:
             if valid_rectangle(*red_1, *red_2, whites):
                 mx = max(mx, area(red_1, red_2))
-            count += 1
-            if count > limit:
-                print(f'Linit: {limit}')
-                limit *= 10
     return mx
-    # valid_rectangles = [(red_1, red_2) for red_1 in reds for red_2 in reds
-    #                     if valid_rectangle(*red_1, *red_2, whites)]
-    # for r1, r2 in valid_rectangles:
-    #     print(r1, r2)
-    # return max(area(red_1, red_2) for red_1, red_2 in valid_rectangles)
 
 
 print(part_two('inputs/d9a.txt'))
